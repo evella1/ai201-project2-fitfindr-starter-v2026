@@ -18,6 +18,27 @@ data earns credit; *"80% seemed reasonable"* does not.
 **Two are written for you. You write three.**
 
 ---
+### `search_listings`
+
+- **What it does:**  searches the listings file and returns matches
+- **Inputs:**  description (string), size (string), max_price (float)
+- **Returns:** listing (list[dict])
+- **When it has nothing:** an empty list
+
+### `suggest_outfit`
+
+- **What it does:** takes an item and a wardrobe, returns outfit ideas
+- **Inputs:** new_item (dictionary), wardrobe (dictionary)
+- **Returns:** outfit (string)
+- **When it has nothing:** general styling advice
+
+### `create_fit_card`
+
+- **What it does:** what it does: writes a short caption someone would actually post.
+- **Inputs:** outfit (string), new_item (dictionary)
+- **Returns:** fit_card (string) - 2-4 sentences
+- **When it has nothing:** descriptive message
+
 
 ## 1. A matching query completes all three tools
 
@@ -28,7 +49,7 @@ tool calls and returns a fit card — in at least 4 of 5 tries.
 <!-- Why 4 of 5 and not 5 of 5? Something about your search, probably —
      "my search is a plain keyword match and some phrasings will miss" is a
      real answer. -->
-
+My search is a plain keyword match and some phrasings might be missed.
 ---
 
 ## 2. An impossible query stops before the second tool
