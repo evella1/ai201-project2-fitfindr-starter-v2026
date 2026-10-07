@@ -18,27 +18,6 @@ data earns credit; *"80% seemed reasonable"* does not.
 **Two are written for you. You write three.**
 
 ---
-### `search_listings`
-
-- **What it does:**  searches the listings file and returns matches
-- **Inputs:**  description (string), size (string), max_price (float)
-- **Returns:** listing (list[dict])
-- **When it has nothing:** an empty list
-
-### `suggest_outfit`
-
-- **What it does:** takes an item and a wardrobe, returns outfit ideas
-- **Inputs:** new_item (dictionary), wardrobe (dictionary)
-- **Returns:** outfit (string)
-- **When it has nothing:** general styling advice
-
-### `create_fit_card`
-
-- **What it does:** what it does: writes a short caption someone would actually post.
-- **Inputs:** outfit (string), new_item (dictionary)
-- **Returns:** fit_card (string) - 2-4 sentences
-- **When it has nothing:** descriptive message
-
 
 ## 1. A matching query completes all three tools
 
@@ -49,7 +28,9 @@ tool calls and returns a fit card — in at least 4 of 5 tries.
 <!-- Why 4 of 5 and not 5 of 5? Something about your search, probably —
      "my search is a plain keyword match and some phrasings will miss" is a
      real answer. -->
-My search is a plain keyword match and some phrasings might be missed.
+
+If a model call fails for reasons other than unmatched query the agent won't complete all three tool calls, therefore a reasonable criterion is success in 4/5 tries.
+
 ---
 
 ## 2. An impossible query stops before the second tool
@@ -61,9 +42,13 @@ Given a query that matches no listings, the agent stops before calling
 <!-- Why is 5 of 5 reasonable here when criterion 1 isn't? What's different
      about this path? -->
 
+This path has a deterministic expected outcome, it does not use a model call: when the query matches no listings, there is no valid input for suggest_outfit, so the agent should always stop and explain what constraint needs to change. Unlike criterion 1, there is little variability in the correct behavior once no listings are found, making 5 of 5 a reasonable reliability target.
+
 ---
 
-## 3. Something about state
+## 3. State is preserved between tools
+
+The item selected by the search is correctly preserved and passed to suggest_outfit, verified using the item’s unique ID, in 5 out of 5 tries.
 
 <!-- YOU WRITE THIS ONE.
 
@@ -79,11 +64,13 @@ Given a query that matches no listings, the agent stops before calling
 
 **Why this target:**
 
-
+This tests whether state is reliably maintained between tool calls. A 5/5 target is appropriate because the selected item and its unique ID are deterministic and do not use a model call, so every successful search should pass the exact same item to suggest_outfit. Any mismatch indicates a state-handling failure.
 
 ---
 
-## 4. Something about the fit card
+## 4. Fit card caption mentions the item's price
+ 
+ The card contains the exact listing price from selected_item["price"] in 4/5 tries.
 
 <!-- YOU WRITE THIS ONE.
 
@@ -100,11 +87,13 @@ Given a query that matches no listings, the agent stops before calling
 
 **Why this target:**
 
-
+The model wording changes every time and might not mention the exact price, therefore the target is 4/5 tries.
 
 ---
 
-## 5. Your choice
+## 5. Suggests_outfit returns general styling advice when it has nothing to return
+
+Returns a non empty string and produces a fit card in 4/5 tries when wardrobe is empty.
 
 <!-- YOU WRITE THIS ONE TOO.
 
@@ -114,10 +103,9 @@ Given a query that matches no listings, the agent stops before calling
      or an observable outcome. -->
 
 
-
 **Why this target:**
 
-
+Even though the empty wardrobe check is deterministic, the path goes through 2 model calls, hence the 4/5 target.
 
 ---
 
