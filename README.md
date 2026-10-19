@@ -147,15 +147,25 @@ $ python -c "from tools import create_fit_card; ..."
 
 **Moment 1**
 
-- *What I asked for:*
-- *What came back:*
-- *What I changed:*
+- *What I asked for:* I asked Claude to read my run logs and mark each try
+  PASS or FAIL against the criteria in criteria.md.
+- *What came back:* The filled-in table, plus two problems with my criteria:
+  criterion 3 says "verified using the item's unique ID" but the trace never
+  prints an ID, and criterion 4 says "exact price" while the cards say "$30"
+  and the listing says 30.0.
+- *What I changed:* I kept the verdicts and simplified the write-up, and I
+  noted criteria 3 and 4 as targets to tighten.
 
 **Moment 2**
 
-- *What I asked for:*
-- *What came back:*
-- *What I changed:*
+- *What I asked for:* Whether I could just change the query for criterion 5
+  so it would pass.
+- *What came back:* No. That changes the test, not the agent. The diagnosis
+  pointed at parse_query, which reads 'between $10 and $1'` as "max $10".
+  Claude fixed parse_query to handle price ranges and checked that the other
+  queries still parse the same way.
+- *What I changed:* I kept the original query, ran the whole test again, and
+  criterion 5 went from 0/5 to 5/5.
 
 <!-- ═══════════════════════ UNIT 4 — THE TEST ═══════════════════════
 
