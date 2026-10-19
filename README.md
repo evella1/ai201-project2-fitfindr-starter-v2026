@@ -372,25 +372,46 @@ full. -->
 
      `python run_eval.py --label after` -->
 
-**What I changed:**
+**What I changed:** parse_query now recognises price ranges
+between $10 and $12, $10-$12, $10 to $12) and uses the upper bound as
+max_price, removing the range from the description.
 
-**Which failure it was meant to fix:**
+**Which failure it was meant to fix:** Criterion 5 — the range was misread, so
+search returned nothing and suggest_outfit never ran.
 
 ### Run Log — After
 
 | Criterion | Target | Try 1 | Try 2 | Try 3 | Try 4 | Try 5 | Verdict |
 |---|---|---|---|---|---|---|---|
-| 1.  |  |  |  |  |  |  |  |
-| 2.  |  |  |  |  |  |  |  |
-| 3.  |  |  |  |  |  |  |  |
-| 4.  |  |  |  |  |  |  |  |
-| 5.  |  |  |  |  |  |  |  |
+| 1. matching query completes | 4 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
+| 2. impossible query stops early | 5 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
+| 3. state persists across tools | 5 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
+| 4. fit card shows exact price | 4 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
+| 5. general advice with empty wardrobe | 4 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
 
-**Did it help, and how do I know:**
 
-<!-- If it made things worse, say that. Honestly reported, that earns full
-     credit and is more interesting than one that worked. -->
+**Did it help, and how do I know:** Yes. Criterion 5 went from 0/5 to 5/5 with
+the same query. The search now finds the belt, and suggest_outfit gives
+general advice with an empty wardrobe. The other four criteria didn't change.
 
+```
+[1] parse_query
+      in:  Leather Belt between $10 and $12
+      out: dict with keys: description, size, max_price
+[2] search_listings (via MCP)
+      in:  dict with keys: description, size, max_price
+      out: 1 items: Leather Belt — Brown, Braided
+      →    1 match(es)
+[3] select_item
+      out: Leather Belt — Brown, Braided ($12.0, thredUp)
+[4] suggest_outfit
+      in:  Leather Belt — Brown, Braided ($12.0, thredUp)
+      out: Hey there! Oh, a braided leather belt is absolute gold for a thrifted wardrobe—it adds just enough texture to …
+      →    0 wardrobe item(s)
+[5] create_fit_card
+      in:  Leather Belt — Brown, Braided ($12.0, thredUp)
+      out: Found this vintage braided leather belt on thredUP for just $12, and it’s about to live on my straight-leg jea…
+```
 
 
 ---
@@ -400,6 +421,14 @@ full. -->
 <!-- For each criterion still missed: what you'd do, and why you stopped where
      you did. "I ran out of time" is fine if it's true. Pretending nothing is
      left is not. -->
+
+All five criteria are met, but some things are still weak:
+
+- In an earlier run, criterion 1 dropped to 3/5 because of 503 UNAVAILABLE  errors, and the error message wrongly tells the user to check
+  GEMINI_API_KEY. I'd add a retry and a clearer message.
+- Search only accepts a max price, so '$10-$12' really means "up to $12".
+- 'floral dress size M for less than $40' leaves "for" in the description. It still matches, but it could break other queries.
+- Criteria 3 and 4 always passed. I'd tighten 3 to compare the item id and 4 to an exact price string.
 
 
 
