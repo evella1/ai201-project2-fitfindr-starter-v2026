@@ -38,6 +38,11 @@ def new_session(query: str, wardrobe: dict) -> dict:
 # "Medium Wash" or the "L" in "L/XL" can't be mistaken for a request.
 _SIZE_WORDS = r"XXS|XS|S|M|L|XL|XXL"
 
+# "between $10 and $12", "$10-$12", "$10 to $12". Search only takes a ceiling,
+# so the upper bound becomes max_price and the whole range leaves the description.
+_RANGE_RE = re.compile(
+    r"(?:between\s+)?\$\s*(\d+(?:\.\d+)?)\s*(?:-|–|to|and)\s*\$?\s*(\d+(?:\.\d+)?)", re.I
+)
 _PRICE_RE = re.compile(r"(?:under|below|less than|max|up to)?\s*\$\s*(\d+(?:\.\d+)?)", re.I)
 _SIZE_RE = re.compile(rf"\bsize\s+({_SIZE_WORDS}|US\s*\d+(?:\.\d+)?|W\d+)\b", re.I)
 _BARE_SIZE_RE = re.compile(rf",\s*({_SIZE_WORDS})\s*$", re.I)
@@ -62,8 +67,12 @@ def parse_query(query: str) -> dict:
     text = query or ""
 
     max_price = None
+    range_match = _RANGE_RE.search(text)
     price_match = _PRICE_RE.search(text)
-    if price_match:
+    if range_match:
+        max_price = max(float(range_match.group(1)), float(range_match.group(2)))
+        text = text[: range_match.start()] + " " + text[range_match.end() :]
+    elif price_match:
         max_price = float(price_match.group(1))
         text = text[: price_match.start()] + " " + text[price_match.end() :]
 
