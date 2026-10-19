@@ -239,13 +239,88 @@ that produced it:
 **Happy path**
 
 ```
-
+[1] parse_query
+      in:  track jacket size M under $50
+      out: dict with keys: description, size, max_price
+[2] search_listings (via MCP)
+      in:  dict with keys: description, size, max_price
+      out: 2 items: 90s Track Jacket — Navy/White Stripe, Shacket — Olive Canvas
+      →    2 match(es)
+[3] select_item
+      out: 90s Track Jacket — Navy/White Stripe ($45.0, poshmark)
+[4] suggest_outfit
+      in:  90s Track Jacket — Navy/White Stripe ($45.0, poshmark)
+      out: Hey there! That 90s Champion track jacket is an absolute goldmine—navy and white is such a classic combo, and …
+      →    10 wardrobe item(s)
+[5] create_fit_card
+      in:  90s Track Jacket — Navy/White Stripe ($45.0, poshmark)
+      out: scored this vintage 90s champion track jacket on poshmark for just $45 and i am obsessed 🤌🏼 tossing it over ba…
 ```
 
 **Empty search**
 
 ```
+empty search
 
+[1] parse_query
+      in:  designer ballgown size XXS under $5
+      out: dict with keys: description, size, max_price
+[2] search_listings (via MCP)
+      in:  dict with keys: description, size, max_price
+      out: [] (empty)
+      →    0 match(es)
+[3] branch
+      →    search returned []: stopping before suggest_outfit
+
+Nothing in the listings matched description 'designer ballgown', size XXS, under $5.
+Things to change: try broader words — 'jacket' finds more than 'cropped corduroy jacket'; drop the size, or try a neighbouring one; raise the price ceiling above $5.
+```
+
+**empty wardrobe**
+```
+[1] parse_query
+      in:  vintage band tee under $25
+      out: dict with keys: description, size, max_price
+[2] search_listings (via MCP)
+      in:  dict with keys: description, size, max_price
+      out: 10 items: Graphic Tee — 2003 Tour Bootleg Style, Vintage Band Tee — Faded Grey, Y2K Baby Tee — Butterfly Print … +7 more
+      →    10 match(es)
+[3] select_item
+      out: Graphic Tee — 2003 Tour Bootleg Style ($24.0, depop)
+[4] suggest_outfit
+      in:  Graphic Tee — 2003 Tour Bootleg Style ($24.0, depop)
+      out: Hey there! Oh, a faded bootleg tee is an absolute thrift-store holy grail—that worn-in cotton feel is just unb…
+      →    0 wardrobe item(s)
+[5] create_fit_card
+      in:  Graphic Tee — 2003 Tour Bootleg Style ($24.0, depop)
+      out: scored this 2003 tour bootleg style graphic tee on depop for just $24 and the worn-in cotton is literally unma…
+  Found:    Graphic Tee — 2003 Tour Bootleg Style — $24.0 on depop
+
+  Outfit:   Hey there! Oh, a faded bootleg tee is an absolute thrift-store holy grail—that worn-in cotton feel is just unbeatable. Since it has that effortless, grungy streetwear energy, here are two super easy ways to style it depending on your vibe:
+
+**The Off-Duty Cool Look:** Pair the tee with some relaxed, mid-rise light wash denim (a little distressing or carpenter-style pockets would look amazing here) to lean into that 2000s slouchy silhouette. Throw on a pair of beat-up canvas sneakers or chunky retro skate shoes, and accessorize with a simple silver chain necklace and a black nylon shoulder bag to tie the whole effortless vibe together.
+
+**The Edge-meets-Ease Look:** Tuck the boxy tee into a black pleated tennis skirt or a distressed denim midi skirt to play with proportions. Layer an oversized, boxy zip-up hoodie over top (leave it unzipped so the graphic peeks through), and finish it off with some platform combat boots and cozy crew socks.It’s equal parts edgy and comfortable, perfect for running errands or hitting up a concert!
+
+  Fit card: scored this 2003 tour bootleg style graphic tee on depop for just $24 and the worn-in cotton is literally unmatched. styling it with slouchy light wash denim and beat-up sneakers for the ultimate off-duty grunge look. absolute holy grail find!
+```
+
+**model unavailable**
+```
+[1] parse_query
+      in:  oversized denim jacket for a rainy day
+      out: dict with keys: description, size, max_price
+[2] search_listings (via MCP)
+      in:  dict with keys: description, size, max_price
+      out: 10 items: Denim Jacket — Light Wash, Cropped, Vintage Levi's 501 Jeans — Medium Wash, Oversized Flannel Shirt — Plaid Red/Black … +7 more
+      →    10 match(es)
+[3] select_item
+      out: Denim Jacket — Light Wash, Cropped ($42.0, poshmark)
+[4] model unavailable
+      →    stopping, search results kept
+
+The model couldn't be reached, so the outfit and caption steps didn't run. The search worked — 10 listing(s) were found. Check GEMINI_API_KEY in your .env, then run the same query again.
+What the service said: The model rejected your API key. Check GEMINI_API_KEY in your .env file, or create a fresh key at aistudio.google.com.
 ```
 
 **On the MCP move:** <!-- what changed in your code, and whether anything
