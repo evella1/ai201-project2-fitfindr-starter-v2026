@@ -35,8 +35,30 @@ SCENARIOS = [
         "wardrobe": "empty",
         "criterion": None,
     },
-    # TODO: add what your criteria 3, 4 and 5 need.
-    #
+    {
+        # A normal matching query. Criterion 3 — the selected item's ID in the
+        # session must match the item suggest_outfit actually received.
+        "name": "state persists across runs",
+        "query": "Knit Cardigan under $40",
+        "wardrobe": "example",
+        "criterion": 3,
+    },
+    {
+        # A matching query with a known listing price. Criterion 4 — the fit
+        # card must contain selected_item["price"] exactly.
+        "name": "listing shows exact price",
+        "query": "floral dress size M for less than $40",
+        "wardrobe": "example",
+        "criterion": 4,
+    },
+    {
+        # A matching query, but nothing saved. Criterion 5 — suggest_outfit
+        # falls back to general styling advice and a fit card still appears.
+        "name": "general advice with empty wardrobe",
+        "query": "Leather Belt $10-$12",
+        "wardrobe": "empty",
+        "criterion": 5,
+    }
     # Set "criterion" to the number in criteria.md that the scenario tests.
     # "criterion": None means a diagnostic run — useful to have, but it isn't
     # one of your five, and run_eval.py marks it as such in the table.
