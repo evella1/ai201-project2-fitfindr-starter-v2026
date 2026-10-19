@@ -55,7 +55,7 @@ SCENARIOS = [
         # A matching query, but nothing saved. Criterion 5 — suggest_outfit
         # falls back to general styling advice and a fit card still appears.
         "name": "general advice with empty wardrobe",
-        "query": "Leather Belt $10-$12",
+        "query": "Leather Belt between $10 and $12",
         "wardrobe": "empty",
         "criterion": 5,
     }
